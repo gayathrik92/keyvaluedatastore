@@ -49,60 +49,75 @@ public class FileKeyService {
 		return hmap.get(key);
 	}
 
-	public String addValue(String key, String name, int age) throws CustomizeException {
+	public String addValue(pojo pjbody) throws CustomizeException, IOException {
 		HashMap<String, pojo> hmap = new HashMap<String, pojo>();
 		hmap = getAllValues();
 		BufferedWriter bufferedWriter = null;
-		if (hmap.containsKey(key))
-			return "the key is already present";
-		else {
-			try {
+		FileWriter fileWriter = null;
+		if (pjbody.getKey() != null && !(pjbody.getKey().equals("")) && !(pjbody.getKey().equals("null"))) {
+			if (hmap.containsKey(pjbody.getKey()))
+				return "the key is already present";
+			else {
+				try {
 
-				FileWriter fileWriter = new FileWriter(file);
-				bufferedWriter = new BufferedWriter(fileWriter);
-				pojo pj = null;
-				for (HashMap.Entry mapElement : hmap.entrySet()) {
-					pj = new pojo();
-					pj = (pojo) mapElement.getValue();
-					bufferedWriter.append(mapElement.getKey() + "," + pj.getName() + "," + pj.getAge());
-					bufferedWriter.append('\n');
+					fileWriter = new FileWriter(file);
+					bufferedWriter = new BufferedWriter(fileWriter);
+					pojo pj = null;
+					for (HashMap.Entry mapElement : hmap.entrySet()) {
+						pj = new pojo();
+						pj = (pojo) mapElement.getValue();
+						bufferedWriter.append(mapElement.getKey() + "," + pj.getName() + "," + pj.getAge());
+						bufferedWriter.append('\n');
+					}
+					bufferedWriter.append(pjbody.getKey() + "," + pjbody.getName() + "," + pjbody.getAge());
+					bufferedWriter.close();
+
+				} catch (IOException e) {
+					throw new CustomizeException("There is no such file" + e.getMessage());
+				} finally {
+					fileWriter.close();
 				}
-				bufferedWriter.append(key + "," + name + "," + age);
-				bufferedWriter.close();
 
-			} catch (IOException e) {
-				throw new CustomizeException("There is no such file" + e.getMessage());
 			}
-
+		} else {
+			return "key cannot be null";
 		}
 		return "new key is added";
 	}
 
-	public String delete(String key) throws CustomizeException {
+	public String delete(String key) throws CustomizeException, IOException {
 		HashMap<String, pojo> hmap = new HashMap<String, pojo>();
 		hmap = getAllValues();
 		BufferedWriter bufferedWriter = null;
-		if (hmap.containsKey(key)) {
-			hmap.remove(key);
-			try {
+		FileWriter fileWriter = null;
+		if (!(key.equals("")) && !(key.equals("null")) && key != null) {
+			if (hmap.containsKey(key)) {
+				hmap.remove(key);
+				try {
 
-				FileWriter fileWriter = new FileWriter(file);
-				bufferedWriter = new BufferedWriter(fileWriter);
-				pojo pj = null;
-				for (HashMap.Entry mapElement : hmap.entrySet()) {
-					pj = new pojo();
-					pj = (pojo) mapElement.getValue();
-					bufferedWriter.append(mapElement.getKey() + "," + pj.getName() + "," + pj.getAge());
-					bufferedWriter.append('\n');
+					fileWriter = new FileWriter(file);
+					bufferedWriter = new BufferedWriter(fileWriter);
+					pojo pj = null;
+					for (HashMap.Entry mapElement : hmap.entrySet()) {
+						pj = new pojo();
+						pj = (pojo) mapElement.getValue();
+						bufferedWriter.append(mapElement.getKey() + "," + pj.getName() + "," + pj.getAge());
+						bufferedWriter.append('\n');
+					}
+
+					bufferedWriter.close();
+				} catch (IOException e) {
+					throw new CustomizeException("There is no such file" + e.getMessage());
+				} finally {
+					fileWriter.close();
 				}
-				bufferedWriter.close();
-			} catch (IOException e) {
-				throw new CustomizeException("There is no such file" + e.getMessage());
+				return "deleted key is " + key;
+			} else {
+				return "there is no such key";
 			}
-			return "deleted key is " + key;
+
 		} else
-			return "there is no such key";
+			return "key cannot be null";
 
 	}
-
 }

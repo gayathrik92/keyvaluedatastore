@@ -1,5 +1,6 @@
 package freshworks.com.springbooterstarter.datastore;
 
+import java.io.IOException;
 import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,16 +26,15 @@ public class FilekeyDatastore {
 	}
 
 	@RequestMapping(method = RequestMethod.DELETE, value = "/values/{key}")
-	public synchronized String delete(@PathVariable String key) throws CustomizeException {
+	public synchronized String delete(@PathVariable String key) throws CustomizeException, IOException {
 		String message = fileserv.delete(key);
 		return message;
 	}
 
-	@RequestMapping(method = RequestMethod.PUT, value = "/values/{key}/{name}/{age}")
-	public synchronized String addValue(@RequestBody Filedatastore filestore, @PathVariable String key,
-			@PathVariable String name, @PathVariable int age) throws CustomizeException {
+	@RequestMapping(method = RequestMethod.POST, value = "/values")
+	public synchronized String addValue(@RequestBody pojo pj) throws CustomizeException, IOException {
 
-		String message = fileserv.addValue(key, name, age);
+		String message = fileserv.addValue(pj);
 		return message;
 	}
 
