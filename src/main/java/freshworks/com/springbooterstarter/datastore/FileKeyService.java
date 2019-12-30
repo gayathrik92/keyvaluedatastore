@@ -9,11 +9,16 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 
 @Service
 public class FileKeyService {
 	// file path can be fetched from arguments of main method
-	File file = new File("C:/freshworks/filedatastore.txt");
+	// File file = new File("C:/freshworks/filedatastore.txt");
+	static String uname = System.getProperty("user.name");
+	static String fileSeparator = System.getProperty("file.separator");
+	static File from = new File("src/main/java/filedatastore.txt");
+	static File to = new File("C:" + fileSeparator + "Users" + fileSeparator + uname + fileSeparator + "filedatastore.txt");
 
 	public HashMap<String, pojo> getAllValues() throws CustomizeException {
 		BufferedReader reader = null;
@@ -22,10 +27,8 @@ public class FileKeyService {
 		String text = null;
 		pojo pj = null;
 		HashMap<String, pojo> hmap = new HashMap<String, pojo>();
-
 		try {
-
-			reader = new BufferedReader(new FileReader(file));
+			reader = new BufferedReader(new FileReader(to));
 			while ((text = reader.readLine()) != null) {
 				pj = new pojo();
 				key = text.split(",")[0].trim();
@@ -55,29 +58,33 @@ public class FileKeyService {
 		BufferedWriter bufferedWriter = null;
 		FileWriter fileWriter = null;
 		if (pjbody.getKey() != null && !(pjbody.getKey().equals("")) && !(pjbody.getKey().equals("null"))) {
-			if (hmap.containsKey(pjbody.getKey()))
-				return "the key is already present";
-			else {
-				try {
+			if (pjbody.getKey().length() < 32) {
+				if (hmap.containsKey(pjbody.getKey()))
+					return "the key is already present";
+				else {
+					try {
 
-					fileWriter = new FileWriter(file);
-					bufferedWriter = new BufferedWriter(fileWriter);
-					pojo pj = null;
-					for (HashMap.Entry mapElement : hmap.entrySet()) {
-						pj = new pojo();
-						pj = (pojo) mapElement.getValue();
-						bufferedWriter.append(mapElement.getKey() + "," + pj.getName() + "," + pj.getAge());
-						bufferedWriter.append('\n');
+						fileWriter = new FileWriter(to);
+						bufferedWriter = new BufferedWriter(fileWriter);
+						pojo pj = null;
+						for (HashMap.Entry mapElement : hmap.entrySet()) {
+							pj = new pojo();
+							pj = (pojo) mapElement.getValue();
+							bufferedWriter.append(mapElement.getKey() + "," + pj.getName() + "," + pj.getAge());
+							bufferedWriter.append('\n');
+						}
+						bufferedWriter.append(pjbody.getKey() + "," + pjbody.getName() + "," + pjbody.getAge());
+						bufferedWriter.close();
+
+					} catch (IOException e) {
+						throw new CustomizeException("There is no such file" + e.getMessage());
+					} finally {
+						fileWriter.close();
 					}
-					bufferedWriter.append(pjbody.getKey() + "," + pjbody.getName() + "," + pjbody.getAge());
-					bufferedWriter.close();
-
-				} catch (IOException e) {
-					throw new CustomizeException("There is no such file" + e.getMessage());
-				} finally {
-					fileWriter.close();
 				}
 
+			} else {
+				return "key value cannot be more than 32 chars";
 			}
 		} else {
 			return "key cannot be null";
@@ -95,7 +102,7 @@ public class FileKeyService {
 				hmap.remove(key);
 				try {
 
-					fileWriter = new FileWriter(file);
+					fileWriter = new FileWriter(to);
 					bufferedWriter = new BufferedWriter(fileWriter);
 					pojo pj = null;
 					for (HashMap.Entry mapElement : hmap.entrySet()) {
@@ -119,5 +126,24 @@ public class FileKeyService {
 		} else
 			return "key cannot be null";
 
+	}
+//block to automatically create a filedatastore
+	static {
+		int l = 0;
+		try {
+			if (to.createNewFile()) {
+				l = 1;
+				System.out.println("file is created");
+			} else {
+				System.out.println("file already exist");
+			}
+			if (l == 1) {
+				FileCopyUtils.copy(from, to);
+			}
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
